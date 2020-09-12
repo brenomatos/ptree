@@ -17,7 +17,7 @@ void barreira(TBarreira* b){
         pthread_cond_wait(&(b->barreira_cond), &(b->mutex));
     } else {
         // quando todos estão nela, libera
-        b->counter == 0;
+        b->counter = 0;
         pthread_cond_signal(&(b->barreira_cond));
     }
     // destrava o mutex
