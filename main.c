@@ -3,7 +3,6 @@
 
 int NUM_THREADS = 1;
 TBarreira bar;
-initBarreira(&bar, 1);
 
 
 void *tree_thread(){
@@ -65,6 +64,7 @@ void *tree_thread(){
 int main(int argc, char *argv[])
 {
     pthread_t threads[NUM_THREADS];
+    initBarreira(&bar, 1);
 
     for (int i = 0; i < NUM_THREADS; i++)
     {
