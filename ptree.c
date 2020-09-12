@@ -1,21 +1,7 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <limits.h>
-#include <sys/time.h>
+#include "ptree.h"
+// #include "barreira.h"
 
 #define MAX  10
-
-typedef long TipoChave;
-typedef struct TipoRegistro {
-  TipoChave Chave;
-  /* outros componentes */
-} TipoRegistro;
-typedef struct TipoNo * TipoApontador;
-typedef struct TipoNo {
-  TipoRegistro Reg;
-  TipoApontador Esq, Dir;
-} TipoNo;
-typedef TipoApontador TipoDicionario;
 
 void Pesquisa(TipoRegistro *x, TipoApontador *p)
 { if (*p == NULL) 
