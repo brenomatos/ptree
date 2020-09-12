@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <limits.h>
 #include <sys/time.h>
+#define MAX  10
+
 
 typedef long TipoChave;
 typedef struct TipoRegistro {
