@@ -3,8 +3,8 @@
 void initBarreira(TBarreira* b, int n){
     b->n = n;
     b->counter = 0;
-    pthread_cond_t barreira_cond = PTHREAD_COND_INITIALIZER;
-    pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+    b->barreira_cond = PTHREAD_COND_INITIALIZER;
+    b->mutex = PTHREAD_MUTEX_INITIALIZER;
 }
 
 void barreira(TBarreira* b){
