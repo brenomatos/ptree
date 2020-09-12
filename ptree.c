@@ -139,7 +139,7 @@ int main(int argc, char *argv[])
   int i, j, k, n;
 
   Inicializa(&Dicionario);
-  /* Gera uma permutação aleatoria de chaves entre 1 e MAX */
+  /* Gera uma permutaï¿½ï¿½o aleatoria de chaves entre 1 e MAX */
   for (i = 0; i < MAX; i++) vetor[i] = i+1;
   gettimeofday(&t,NULL);
   srand((unsigned int)t.tv_usec);
@@ -149,7 +149,7 @@ int main(int argc, char *argv[])
   for (i = 0; i < MAX; i++) 
     { x.Chave = vetor[i];
       Insere(x, &Dicionario);
-      printf("Inseriu chave: %d\n", x.Chave);
+      printf("Inseriu chave: %ld\n", x.Chave);
      Testa(Dicionario);
     }
 
