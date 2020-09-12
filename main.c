@@ -1,13 +1,15 @@
 #include "ptree.h"
 #include "barreira.h"
 
-int main(int argc, char *argv[])
-{
+int NUM_THREADS = 1;
+TBarreira bar;
+initBarreira(&bar, 1);
+
+
+void *tree_thread(){
   struct timeval t; TipoNo *Dicionario;
   TipoRegistro x; TipoChave vetor[MAX];
   int i, j, k, n;
-  TBarreira bar;
-  initBarreira(&bar, 1);
 
   Inicializa(&Dicionario);
   /* Gera uma permuta��o aleatoria de chaves entre 1 e MAX */
@@ -57,4 +59,16 @@ int main(int argc, char *argv[])
       printf("Retirou chave: %ld\n", x.Chave);
     }
   return 0;
+}
+
+
+int main(int argc, char *argv[])
+{
+    pthread_t threads[NUM_THREADS];
+
+    for (int i = 0; i < NUM_THREADS; i++)
+    {
+        pthread_create(&threads[i], NULL, tree_thread, NULL);
+        pthread_join(threads[i], NULL);
+    }
 }
