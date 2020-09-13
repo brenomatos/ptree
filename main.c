@@ -1,7 +1,7 @@
 #include "ptree.h"
 #include "barreira.h"
 
-int NUM_THREADS = 1;
+int NUM_THREADS = 3;
 TBarreira bar;
 
 
@@ -64,11 +64,15 @@ void *tree_thread(){
 int main(int argc, char *argv[])
 {
     pthread_t threads[NUM_THREADS];
-    initBarreira(&bar, 1);
+    initBarreira(&bar, NUM_THREADS);
 
     for (int i = 0; i < NUM_THREADS; i++)
     {
         pthread_create(&threads[i], NULL, tree_thread, NULL);
+    }
+    for (int i = 0; i < NUM_THREADS; i++)
+    {
         pthread_join(threads[i], NULL);
     }
+
 }
