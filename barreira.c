@@ -17,7 +17,7 @@ void barreira(TBarreira* b){
 
     b->counter++;
 
-    while(b->counter < b->n) {
+    if(b->counter < b->n) {
         // enquanto o número de threads na barreira nao chega ao máximo espera
         pthread_cond_wait(&(b->barreira_cond), &(b->mutex));
     }
