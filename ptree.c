@@ -5,13 +5,30 @@ void Pesquisa(TipoRegistro *x, TipoApontador *p)
   { printf("Erro: Registro nao esta presente na arvore\n");
     return;
   }
-  if (x->Chave < (*p)->Reg.Chave)
-  { Pesquisa(x, &(*p)->Esq);
+
+  pthread_mutex_lock(&((*p)->mutex));
+  if((*p)->is_locked){
+    pthread_cond_wait(&((*p)->cond), &((*p)->mutex));
+  }
+  (*p)->is_locked = 1;
+
+  if (x->Chave < (*p)->Reg.Chave){
+    Pesquisa(x, &(*p)->Esq);
+    (*p)->is_locked = 0;
+    pthread_cond_signal(&((*p)->cond));
+    pthread_mutex_unlock(&((*p)->mutex));
     return;
   }
-  if (x->Chave > (*p)->Reg.Chave)
-  Pesquisa(x, &(*p)->Dir);
-  else *x = (*p)->Reg;
+
+  if (x->Chave > (*p)->Reg.Chave){
+    Pesquisa(x, &(*p)->Dir);
+  }else{
+    *x = (*p)->Reg;
+  }
+
+  (*p)->is_locked = 0;
+  pthread_cond_signal(&((*p)->cond));
+  pthread_mutex_unlock(&((*p)->mutex));
 }
 
 void Insere(TipoRegistro x, TipoApontador *p)
