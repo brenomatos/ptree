@@ -2,19 +2,27 @@
 #include <stdio.h>
 #include <limits.h>
 #include <sys/time.h>
+#include <pthread.h>
 #define MAX  10
 
 
 typedef long TipoChave;
+
 typedef struct TipoRegistro {
   TipoChave Chave;
   /* outros componentes */
 } TipoRegistro;
+
 typedef struct TipoNo * TipoApontador;
+
 typedef struct TipoNo {
   TipoRegistro Reg;
   TipoApontador Esq, Dir;
+  pthread_cond_t cond;
+  pthread_mutex_t mutex;
+  int is_locked;
 } TipoNo;
+
 typedef TipoApontador TipoDicionario;
 
 

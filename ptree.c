@@ -20,14 +20,44 @@ void Insere(TipoRegistro x, TipoApontador *p)
     (*p)->Reg = x;
     (*p)->Esq = NULL;
     (*p)->Dir = NULL;
+    (*p)->mutex = (pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER;
+    (*p)->cond = (pthread_cond_t)PTHREAD_COND_INITIALIZER;
+    (*p)->is_locked = 0;
     return;
   }
-  if (x.Chave < (*p)->Reg.Chave)
-  { Insere(x, &(*p)->Esq);
+  if (x.Chave < (*p)->Reg.Chave){
+    if((*p)->Esq == NULL){
+      pthread_mutex_lock(&((*p)->mutex));
+      if((*p)->is_locked){
+        pthread_cond_wait(&((*p)->cond), &((*p)->mutex));
+      }
+      (*p)->is_locked = 1;
+      Insere(x, &(*p)->Esq);
+      (*p)->is_locked = 0;
+      pthread_cond_signal(&((*p)->cond));
+      pthread_mutex_unlock(&((*p)->mutex));
+
+    }else{
+      Insere(x, &(*p)->Esq);
+    }
     return;
   }
-  if (x.Chave > (*p)->Reg.Chave)
-  Insere(x, &(*p)->Dir);
+  if (x.Chave > (*p)->Reg.Chave){
+    if((*p)->Dir == NULL){
+      pthread_mutex_lock(&((*p)->mutex));
+      if((*p)->is_locked){
+        pthread_cond_wait(&((*p)->cond), &((*p)->mutex));
+      }
+      (*p)->is_locked = 1;
+      Insere(x, &(*p)->Dir);
+      (*p)->is_locked = 0;
+      pthread_cond_signal(&((*p)->cond));
+      pthread_mutex_unlock(&((*p)->mutex));
+
+    }else{
+      Insere(x, &(*p)->Dir);
+    }
+  }
   else printf("Erro : Registro ja existe na arvore\n");
 }
 

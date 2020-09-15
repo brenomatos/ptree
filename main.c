@@ -1,7 +1,7 @@
 #include "ptree.h"
 #include "barreira.h"
 
-int NUM_THREADS = 3;
+int NUM_THREADS = 1;
 TBarreira bar;
 
 
