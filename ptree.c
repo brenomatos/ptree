@@ -81,18 +81,43 @@ void Retira(TipoRegistro x, TipoApontador *p)
   { printf("Erro : Registro nao esta na arvore\n");
     return;
   }
-  if (x.Chave < (*p)->Reg.Chave) { Retira(x, &(*p)->Esq); return; }
-  if (x.Chave > (*p)->Reg.Chave) { Retira(x, &(*p)->Dir); return; }
-  if ((*p)->Dir == NULL)
-  { Aux = *p;  *p = (*p)->Esq;
+
+  pthread_mutex_lock(&((*p)->mutex));
+  if((*p)->is_locked){
+    pthread_cond_wait(&((*p)->cond), &((*p)->mutex));
+  }
+  (*p)->is_locked = 1;
+
+  if (x.Chave < (*p)->Reg.Chave) {
+    Retira(x, &(*p)->Esq);
+    (*p)->is_locked = 0;
+    pthread_cond_signal(&((*p)->cond));
+    pthread_mutex_unlock(&((*p)->mutex));
+    return;
+  }
+  if (x.Chave > (*p)->Reg.Chave) {
+    Retira(x, &(*p)->Dir);
+    (*p)->is_locked = 0;
+    pthread_cond_signal(&((*p)->cond));
+    pthread_mutex_unlock(&((*p)->mutex));
+    return;
+  }
+
+  if ((*p)->Dir == NULL){
+    Aux = *p;
+    *p = (*p)->Esq;
     free(Aux);
     return;
   }
-  if ((*p)->Esq != NULL)
-  { Antecessor(*p, &(*p)->Esq);
+  if ((*p)->Esq != NULL){
+    Antecessor(*p, &(*p)->Esq);
+    (*p)->is_locked = 0;
+    pthread_cond_signal(&((*p)->cond));
+    pthread_mutex_unlock(&((*p)->mutex));
     return;
   }
-  Aux = *p;  *p = (*p)->Dir;
+  Aux = *p;
+  *p = (*p)->Dir;
   free(Aux);
 }
 
