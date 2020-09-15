@@ -13,6 +13,8 @@ typedef struct TipoRegistro {
   /* outros componentes */
 } TipoRegistro;
 
+
+
 typedef struct TipoNo * TipoApontador;
 
 typedef struct TipoNo {
@@ -24,6 +26,12 @@ typedef struct TipoNo {
 } TipoNo;
 
 typedef TipoApontador TipoDicionario;
+
+typedef struct ThreadParams {
+  int id;
+  TipoNo * Dicionario;
+  TipoChave* vetor;
+} ThreadParams;
 
 
 void Pesquisa(TipoRegistro *x, TipoApontador *p);
