@@ -25,6 +25,7 @@ void *tree_thread(){
      Testa(Dicionario);
     }
 
+  printf("Um\n");
   barreira(&bar);
 
   /* Retira uma chave aleatoriamente e realiza varias pesquisas */
@@ -47,9 +48,11 @@ void *tree_thread(){
       printf("Inseriu chave: %ld\n", x.Chave);
       Testa(Dicionario);
     }
+  printf("Dois\n");
 
   barreira(&bar);
 
+  printf("Tres\n");
   /* Retira a raiz da arvore ate que ela fique vazia */
   for (i = 0; i < MAX; i++)
     { x.Chave = Dicionario->Reg.Chave;
