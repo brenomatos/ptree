@@ -1,7 +1,7 @@
 #include "ptree.h"
 #include "barreira.h"
 
-#define NUM_THREADS 2
+#define NUM_THREADS 20
 
 int LEN = MAX/NUM_THREADS;
 
@@ -30,14 +30,14 @@ void *tree_thread(void *parameters){//}, void* vetor){
 
   /* Retira uma chave aleatoriamente e realiza varias pesquisas */
   for (i = (id-1)*LEN; i < id*LEN; i++)
-    { k = (int) (10.0*rand()/(RAND_MAX+1.0));
-      n = vetor[k];
+    { k = (int) ((double)MAX*rand()/(RAND_MAX+1.0));
+      n = vetor[k % LEN + (id-1)*LEN];
       x.Chave = n;
       Retira(x, &Dicionario);
       Testa(Dicionario);
       printf("Retirou chave: %ld\n", x.Chave);
       for (j = 0; j < MAX; j++)
-        { x.Chave = vetor[(int) (10.0*rand()/(RAND_MAX+1.0))];
+        { x.Chave = vetor[((int) ((double)MAX*rand()/(RAND_MAX+1.0)))% LEN + (id-1)*LEN];
           if (x.Chave != n)
           { printf("Pesquisando chave: %ld\n", x.Chave);
             Pesquisa(&x, &Dicionario);
@@ -90,5 +90,4 @@ int main(int argc, char *argv[])
     {
         pthread_join(threads[i], NULL);
     }
-
 }
