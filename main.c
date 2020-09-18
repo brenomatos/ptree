@@ -2,15 +2,15 @@
 #include "barreira.h"
 #include <time.h>
 
-#define NUM_THREADS 20
+#define NUM_THREADS 1
 
 int LEN = MAX/NUM_THREADS;
 
 TBarreira bar;
 
-
 void *tree_thread(void *parameters){//}, void* vetor){
   TipoRegistro x;
+  x.Chave = 12;
   int i, j, k, n;
 
   ThreadParams params = *((ThreadParams *)parameters);
@@ -18,8 +18,8 @@ void *tree_thread(void *parameters){//}, void* vetor){
   int id = params.id;
   TipoNo *Dicionario = params.Dicionario;
   TipoChave* vetor = params.vetor;
-  barreira(&bar);
 
+  barreira(&bar);
   /* Insere cada chave na arvore e testa sua integridade apos cada insercao */
   for(i = (id-1)*LEN; i < id*LEN; i++){
     x.Chave = vetor[i];
@@ -27,33 +27,31 @@ void *tree_thread(void *parameters){//}, void* vetor){
   }
 
   barreira(&bar);
-
   /* Retira uma chave aleatoriamente e realiza varias pesquisas */
   for(i = 0; i < LEN; i++){
     k = (int) ((double)MAX*rand()/(RAND_MAX+1.0));
     n = vetor[k % LEN + (id-1)*LEN];
     x.Chave = n;
     Retira(x, &Dicionario);
-    for (j = 0; j < MAX; j++)
-      { x.Chave = vetor[((int) ((double)MAX*rand()/(RAND_MAX+1.0)))% LEN + (id-1)*LEN];
-        // printf("%d %d\n",id, ((int)((double)MAX*rand()/(RAND_MAX+1.0)))% LEN + (id-1)*LEN);
-        if (x.Chave != n)
-        {
-          Pesquisa(&x, &Dicionario);
-        }
+    for (j = 0; j < LEN; j++){
+      x.Chave = vetor[((int) ((double)MAX*rand()/(RAND_MAX+1.0)))% LEN + (id-1)*LEN];
+      if (x.Chave != n)
+      {
+        Pesquisa(&x, &Dicionario);
       }
+    }
     x.Chave = n;
     Insere(x, &Dicionario);
   }
 
-  barreira(&bar);
-  /* Retira a raiz da arvore ate que ela fique vazia */
-  for (i = (id-1)*LEN; i < id*LEN; i++){
-    x.Chave = Dicionario->Reg.Chave;
-    Retira(x, &Dicionario);
-  }
+  // barreira(&bar);
+  // /* Retira a raiz da arvore ate que ela fique vazia */
+  // for (i = (id-1)*LEN; i < id*LEN; i++){
+  //   x.Chave = Dicionario->Reg.Chave;
+  //   Retira(x, &Dicionario);
+  // }
 
-  return NULL;
+  // return NULL;
 }
 
 
@@ -70,6 +68,17 @@ int main(int argc, char *argv[]){
   gettimeofday(&t,NULL);
   srand((unsigned int)t.tv_usec);
   Permut(vetor,MAX-1);
+
+  TipoRegistro x;
+  x.Chave = 12;
+  Dicionario = (TipoApontador)malloc(sizeof(TipoNo));
+  Dicionario->Reg = x;
+  Dicionario->Esq = NULL;
+  Dicionario->Dir = NULL;
+  Dicionario->mutex = (pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER;
+  Dicionario->cond = (pthread_cond_t)PTHREAD_COND_INITIALIZER;
+  Dicionario->is_locked = 0;
+  Dicionario->reader_counter = 0;
 
   ThreadParams params[NUM_THREADS];
   for (i = 1; i < NUM_THREADS+1; i++)

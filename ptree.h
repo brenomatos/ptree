@@ -3,7 +3,7 @@
 #include <limits.h>
 #include <sys/time.h>
 #include <pthread.h>
-#define MAX  2000
+#define MAX  1000
 
 
 typedef long TipoChave;
@@ -45,4 +45,4 @@ void TestaI(TipoNo *p, int pai);
 void Testa(TipoNo *p);
 double rand0a1();
 void Permut( TipoChave A[], int n);
-
+void print(TipoApontador *p);

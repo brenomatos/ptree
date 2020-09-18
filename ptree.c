@@ -37,9 +37,9 @@ void Pesquisa(TipoRegistro *x, TipoApontador *p){
   pthread_mutex_unlock(&((*p)->mutex));
 }
 
-void Insere(TipoRegistro x, TipoApontador *p)
-{ if (*p == NULL)
-  { *p = (TipoApontador)malloc(sizeof(TipoNo));
+void Insere(TipoRegistro x, TipoApontador *p){
+  if (*p == NULL){
+    *p = (TipoApontador)malloc(sizeof(TipoNo));
     (*p)->Reg = x;
     (*p)->Esq = NULL;
     (*p)->Dir = NULL;
@@ -109,11 +109,10 @@ void Antecessor(TipoApontador q, TipoApontador *r)
 
 void Retira(TipoRegistro x, TipoApontador *p)
 {  TipoApontador Aux;
-  if (*p == NULL)
-  { printf("Erro : Registro nao esta na arvore\n");
+  if (*p == NULL){
+    printf("Erro : Registro nao esta na arvore\n");
     return;
   }
-
   pthread_mutex_lock(&((*p)->mutex));
   if((*p)->is_locked || (*p)->reader_counter > 0){
     pthread_cond_wait(&((*p)->cond), &((*p)->mutex));
@@ -206,3 +205,11 @@ void Permut( TipoChave A[], int n) {
     }
 }
 
+void print(TipoApontador *p){
+  if(*p==NULL){
+    return;
+  }
+  printf("%ld ", (*p)->Reg.Chave);
+  print(&(*p)->Esq);
+  print(&(*p)->Dir);
+}
