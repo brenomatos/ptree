@@ -18,7 +18,6 @@ void *tree_thread(void *parameters){//}, void* vetor){
   int id = params.id;
   TipoNo *Dicionario = params.Dicionario;
   TipoChave* vetor = params.vetor;
-
   barreira(&bar);
 
   /* Insere cada chave na arvore e testa sua integridade apos cada insercao */
@@ -37,6 +36,7 @@ void *tree_thread(void *parameters){//}, void* vetor){
     Retira(x, &Dicionario);
     for (j = 0; j < MAX; j++)
       { x.Chave = vetor[((int) ((double)MAX*rand()/(RAND_MAX+1.0)))% LEN + (id-1)*LEN];
+        // printf("%d %d\n",id, ((int)((double)MAX*rand()/(RAND_MAX+1.0)))% LEN + (id-1)*LEN);
         if (x.Chave != n)
         {
           Pesquisa(&x, &Dicionario);

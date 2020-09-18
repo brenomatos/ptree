@@ -1,8 +1,8 @@
 #include "ptree.h"
 
-void Pesquisa(TipoRegistro *x, TipoApontador *p)
-{ if (*p == NULL)
-  { printf("Erro: Registro nao esta presente na arvore\n");
+void Pesquisa(TipoRegistro *x, TipoApontador *p){
+  if (*p == NULL){
+    printf("Erro: Registro nao esta presente na arvore\n");
     return;
   }
 
@@ -11,11 +11,15 @@ void Pesquisa(TipoRegistro *x, TipoApontador *p)
     pthread_cond_wait(&((*p)->cond), &((*p)->mutex));
   }
   (*p)->reader_counter++;
+  pthread_mutex_unlock(&((*p)->mutex));
 
   if (x->Chave < (*p)->Reg.Chave){
     Pesquisa(x, &(*p)->Esq);
+    pthread_mutex_lock(&((*p)->mutex));
     (*p)->reader_counter--;
-    pthread_cond_signal(&((*p)->cond));
+    if((*p)->reader_counter == 0){
+      pthread_cond_broadcast(&((*p)->cond));
+    }
     pthread_mutex_unlock(&((*p)->mutex));
     return;
   }
@@ -25,10 +29,10 @@ void Pesquisa(TipoRegistro *x, TipoApontador *p)
   }else{
     *x = (*p)->Reg;
   }
-
+  pthread_mutex_lock(&((*p)->mutex));
   (*p)->reader_counter--;
   if((*p)->reader_counter == 0){
-    pthread_cond_signal(&((*p)->cond));
+    pthread_cond_broadcast(&((*p)->cond));
   }
   pthread_mutex_unlock(&((*p)->mutex));
 }
@@ -52,9 +56,13 @@ void Insere(TipoRegistro x, TipoApontador *p)
         pthread_cond_wait(&((*p)->cond), &((*p)->mutex));
       }
       (*p)->is_locked = 1;
+      pthread_mutex_unlock(&((*p)->mutex));
+
       Insere(x, &(*p)->Esq);
+
+      pthread_mutex_lock(&((*p)->mutex));
       (*p)->is_locked = 0;
-      pthread_cond_signal(&((*p)->cond));
+      pthread_cond_broadcast(&((*p)->cond));
       pthread_mutex_unlock(&((*p)->mutex));
 
     }else{
@@ -69,9 +77,13 @@ void Insere(TipoRegistro x, TipoApontador *p)
         pthread_cond_wait(&((*p)->cond), &((*p)->mutex));
       }
       (*p)->is_locked = 1;
+      pthread_mutex_unlock(&((*p)->mutex));
+
       Insere(x, &(*p)->Dir);
+
+      pthread_mutex_lock(&((*p)->mutex));
       (*p)->is_locked = 0;
-      pthread_cond_signal(&((*p)->cond));
+      pthread_cond_broadcast(&((*p)->cond));
       pthread_mutex_unlock(&((*p)->mutex));
 
     }else{
@@ -107,18 +119,21 @@ void Retira(TipoRegistro x, TipoApontador *p)
     pthread_cond_wait(&((*p)->cond), &((*p)->mutex));
   }
   (*p)->is_locked = 1;
+  pthread_mutex_unlock(&((*p)->mutex));
 
   if (x.Chave < (*p)->Reg.Chave) {
     Retira(x, &(*p)->Esq);
+    pthread_mutex_lock(&((*p)->mutex));
     (*p)->is_locked = 0;
-    pthread_cond_signal(&((*p)->cond));
+    pthread_cond_broadcast(&((*p)->cond));
     pthread_mutex_unlock(&((*p)->mutex));
     return;
   }
   if (x.Chave > (*p)->Reg.Chave) {
     Retira(x, &(*p)->Dir);
+    pthread_mutex_lock(&((*p)->mutex));
     (*p)->is_locked = 0;
-    pthread_cond_signal(&((*p)->cond));
+    pthread_cond_broadcast(&((*p)->cond));
     pthread_mutex_unlock(&((*p)->mutex));
     return;
   }
@@ -131,8 +146,9 @@ void Retira(TipoRegistro x, TipoApontador *p)
   }
   if ((*p)->Esq != NULL){
     Antecessor(*p, &(*p)->Esq);
+    pthread_mutex_lock(&((*p)->mutex));
     (*p)->is_locked = 0;
-    pthread_cond_signal(&((*p)->cond));
+    pthread_cond_broadcast(&((*p)->cond));
     pthread_mutex_unlock(&((*p)->mutex));
     return;
   }
