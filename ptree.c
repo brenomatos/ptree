@@ -48,7 +48,7 @@ void Insere(TipoRegistro x, TipoApontador *p)
   if (x.Chave < (*p)->Reg.Chave){
     if((*p)->Esq == NULL){
       pthread_mutex_lock(&((*p)->mutex));
-      if((*p)->is_locked && (*p)->reader_counter == 0){
+      if((*p)->is_locked || (*p)->reader_counter > 0){
         pthread_cond_wait(&((*p)->cond), &((*p)->mutex));
       }
       (*p)->is_locked = 1;
@@ -65,7 +65,7 @@ void Insere(TipoRegistro x, TipoApontador *p)
   if (x.Chave > (*p)->Reg.Chave){
     if((*p)->Dir == NULL){
       pthread_mutex_lock(&((*p)->mutex));
-      if((*p)->is_locked && (*p)->reader_counter == 0){
+      if((*p)->is_locked || (*p)->reader_counter > 0){
         pthread_cond_wait(&((*p)->cond), &((*p)->mutex));
       }
       (*p)->is_locked = 1;
@@ -103,7 +103,7 @@ void Retira(TipoRegistro x, TipoApontador *p)
   }
 
   pthread_mutex_lock(&((*p)->mutex));
-  if((*p)->is_locked && (*p)->reader_counter == 0){
+  if((*p)->is_locked || (*p)->reader_counter > 0){
     pthread_cond_wait(&((*p)->cond), &((*p)->mutex));
   }
   (*p)->is_locked = 1;
