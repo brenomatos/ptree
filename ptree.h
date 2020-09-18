@@ -3,7 +3,7 @@
 #include <limits.h>
 #include <sys/time.h>
 #include <pthread.h>
-#define MAX  1000
+#define MAX  300
 
 
 typedef long TipoChave;
@@ -22,6 +22,7 @@ typedef struct TipoNo {
   TipoApontador Esq, Dir;
   pthread_cond_t cond;
   pthread_mutex_t mutex;
+  int reader_counter;
   int is_locked;
 } TipoNo;
 

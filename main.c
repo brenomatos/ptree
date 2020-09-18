@@ -23,18 +23,17 @@ void *tree_thread(void *parameters){//}, void* vetor){
     { x.Chave = vetor[i];
       Insere(x, &Dicionario);
       printf("Inseriu chave: %ld\n", x.Chave);
-     Testa(Dicionario);
     }
 
   barreira(&bar);
 
   /* Retira uma chave aleatoriamente e realiza varias pesquisas */
-  for (i = (id-1)*LEN; i < id*LEN; i++)
+  // for (i = (id-1)*LEN; i < id*LEN; i++)
+  for (i = 0; i < MAX; i++)
     { k = (int) ((double)MAX*rand()/(RAND_MAX+1.0));
       n = vetor[k % LEN + (id-1)*LEN];
       x.Chave = n;
       Retira(x, &Dicionario);
-      Testa(Dicionario);
       printf("Retirou chave: %ld\n", x.Chave);
       for (j = 0; j < MAX; j++)
         { x.Chave = vetor[((int) ((double)MAX*rand()/(RAND_MAX+1.0)))% LEN + (id-1)*LEN];
@@ -46,7 +45,6 @@ void *tree_thread(void *parameters){//}, void* vetor){
       x.Chave = n;
       Insere(x, &Dicionario);
       printf("Inseriu chave: %ld\n", x.Chave);
-      Testa(Dicionario);
     }
 
   barreira(&bar);
@@ -54,7 +52,6 @@ void *tree_thread(void *parameters){//}, void* vetor){
   for (i = (id-1)*LEN; i < id*LEN; i++){
       x.Chave = Dicionario->Reg.Chave;
       Retira(x, &Dicionario);
-      Testa(Dicionario);
       printf("Retirou chave: %ld\n", x.Chave);
     }
   return NULL;

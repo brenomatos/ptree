@@ -10,11 +10,11 @@ void Pesquisa(TipoRegistro *x, TipoApontador *p)
   if((*p)->is_locked){
     pthread_cond_wait(&((*p)->cond), &((*p)->mutex));
   }
-  (*p)->is_locked = 1;
+  (*p)->reader_counter++;
 
   if (x->Chave < (*p)->Reg.Chave){
     Pesquisa(x, &(*p)->Esq);
-    (*p)->is_locked = 0;
+    (*p)->reader_counter--;
     pthread_cond_signal(&((*p)->cond));
     pthread_mutex_unlock(&((*p)->mutex));
     return;
@@ -26,8 +26,10 @@ void Pesquisa(TipoRegistro *x, TipoApontador *p)
     *x = (*p)->Reg;
   }
 
-  (*p)->is_locked = 0;
-  pthread_cond_signal(&((*p)->cond));
+  (*p)->reader_counter--;
+  if((*p)->reader_counter == 0){
+    pthread_cond_signal(&((*p)->cond));
+  }
   pthread_mutex_unlock(&((*p)->mutex));
 }
 
@@ -40,12 +42,13 @@ void Insere(TipoRegistro x, TipoApontador *p)
     (*p)->mutex = (pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER;
     (*p)->cond = (pthread_cond_t)PTHREAD_COND_INITIALIZER;
     (*p)->is_locked = 0;
+    (*p)->reader_counter = 0;
     return;
   }
   if (x.Chave < (*p)->Reg.Chave){
     if((*p)->Esq == NULL){
       pthread_mutex_lock(&((*p)->mutex));
-      if((*p)->is_locked){
+      if((*p)->is_locked && (*p)->reader_counter == 0){
         pthread_cond_wait(&((*p)->cond), &((*p)->mutex));
       }
       (*p)->is_locked = 1;
@@ -62,7 +65,7 @@ void Insere(TipoRegistro x, TipoApontador *p)
   if (x.Chave > (*p)->Reg.Chave){
     if((*p)->Dir == NULL){
       pthread_mutex_lock(&((*p)->mutex));
-      if((*p)->is_locked){
+      if((*p)->is_locked && (*p)->reader_counter == 0){
         pthread_cond_wait(&((*p)->cond), &((*p)->mutex));
       }
       (*p)->is_locked = 1;
@@ -100,7 +103,7 @@ void Retira(TipoRegistro x, TipoApontador *p)
   }
 
   pthread_mutex_lock(&((*p)->mutex));
-  if((*p)->is_locked){
+  if((*p)->is_locked && (*p)->reader_counter == 0){
     pthread_cond_wait(&((*p)->cond), &((*p)->mutex));
   }
   (*p)->is_locked = 1;
