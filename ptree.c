@@ -93,22 +93,27 @@ void Insere(TipoRegistro x, TipoApontador *p){
   else printf("Erro : Registro ja existe na arvore\n");
 }
 
-void Inicializa(TipoApontador *Dicionario)
-{ *Dicionario = NULL; }
+void Inicializa(TipoApontador *Dicionario){
+  *Dicionario = NULL;
+}
 
-void Antecessor(TipoApontador q, TipoApontador *r)
-{ if ((*r)->Dir != NULL)
-  { Antecessor(q, &(*r)->Dir);
+void Antecessor(TipoApontador q, TipoApontador *r){
+  if ((*r)->Dir != NULL){
+    Antecessor(q, &(*r)->Dir);
     return;
   }
+  //??????????????????????????
+  // q->is_locked = (*r)->is_locked;
+  // q->reader_counter = (*r)->reader_counter;
+  //??????????????????????????
   q->Reg = (*r)->Reg;
   q = *r;
   *r = (*r)->Esq;
   free(q);
 }
 
-void Retira(TipoRegistro x, TipoApontador *p)
-{  TipoApontador Aux;
+void Retira(TipoRegistro x, TipoApontador *p){
+  TipoApontador Aux;
   if (*p == NULL){
     printf("Erro : Registro nao esta na arvore\n");
     return;

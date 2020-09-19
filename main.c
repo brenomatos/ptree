@@ -2,7 +2,7 @@
 #include "barreira.h"
 #include <time.h>
 
-#define NUM_THREADS 1
+#define NUM_THREADS 3
 
 int LEN = MAX/NUM_THREADS;
 
@@ -19,7 +19,6 @@ void *tree_thread(void *parameters){//}, void* vetor){
   TipoNo *Dicionario = params.Dicionario;
   TipoChave* vetor = params.vetor;
 
-  barreira(&bar);
   /* Insere cada chave na arvore e testa sua integridade apos cada insercao */
   for(i = (id-1)*LEN; i < id*LEN; i++){
     x.Chave = vetor[i];
@@ -44,14 +43,13 @@ void *tree_thread(void *parameters){//}, void* vetor){
     Insere(x, &Dicionario);
   }
 
-  // barreira(&bar);
-  // /* Retira a raiz da arvore ate que ela fique vazia */
-  // for (i = (id-1)*LEN; i < id*LEN; i++){
-  //   x.Chave = Dicionario->Reg.Chave;
-  //   Retira(x, &Dicionario);
-  // }
+  barreira(&bar);
+  for (i = (id-1)*LEN; i < id*LEN; i++){
+    x.Chave = vetor[i % LEN + (id-1)*LEN];
+    Retira(x, &Dicionario);
+  }
 
-  // return NULL;
+  return NULL;
 }
 
 
@@ -92,4 +90,6 @@ int main(int argc, char *argv[]){
   {
       pthread_join(threads[i], NULL);
   }
+  Central(Dicionario);
+
 }
