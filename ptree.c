@@ -99,18 +99,19 @@ void Inicializa(TipoApontador *Dicionario){
 
 void Antecessor(TipoApontador q, TipoApontador *r){
   pthread_mutex_lock(&((*r)->mutex));
-  if((*r)->is_locked || (*r)->reader_counter > 0){
+  while((*r)->is_locked || (*r)->reader_counter > 0){
     pthread_cond_wait(&((*r)->cond), &((*r)->mutex));
   }
   (*r)->is_locked = 1;
   pthread_mutex_unlock(&((*r)->mutex));
 
   if ((*r)->Dir != NULL){
-    Antecessor(q, &(*r)->Dir);
     pthread_mutex_lock(&((*r)->mutex));
     (*r)->is_locked = 0;
     pthread_cond_broadcast(&((*r)->cond));
     pthread_mutex_unlock(&((*r)->mutex));
+
+    Antecessor(q, &(*r)->Dir);
     return;
   }
   q->Reg = (*r)->Reg;
@@ -126,26 +127,28 @@ void Retira(TipoRegistro x, TipoApontador *p){
     return;
   }
   pthread_mutex_lock(&((*p)->mutex));
-  if((*p)->is_locked || (*p)->reader_counter > 0){
+  while((*p)->is_locked || (*p)->reader_counter > 0){
     pthread_cond_wait(&((*p)->cond), &((*p)->mutex));
   }
   (*p)->is_locked = 1;
   pthread_mutex_unlock(&((*p)->mutex));
 
   if (x.Chave < (*p)->Reg.Chave) {
-    Retira(x, &(*p)->Esq);
     pthread_mutex_lock(&((*p)->mutex));
     (*p)->is_locked = 0;
     pthread_cond_broadcast(&((*p)->cond));
     pthread_mutex_unlock(&((*p)->mutex));
+
+    Retira(x, &(*p)->Esq);
     return;
   }
   if (x.Chave > (*p)->Reg.Chave) {
-    Retira(x, &(*p)->Dir);
     pthread_mutex_lock(&((*p)->mutex));
     (*p)->is_locked = 0;
     pthread_cond_broadcast(&((*p)->cond));
     pthread_mutex_unlock(&((*p)->mutex));
+
+    Retira(x, &(*p)->Dir);
     return;
   }
 
