@@ -2,21 +2,20 @@
 #include "barreira.h"
 #include <time.h>
 
-#define NUM_THREADS 3
+#define NUM_THREADS 4
 
 int LEN = MAX/NUM_THREADS;
 
 TBarreira bar;
+TipoNo *Dicionario;
 
-void *tree_thread(void *parameters){//}, void* vetor){
+void *tree_thread(void *parameters){
   TipoRegistro x;
-  x.Chave = 12;
   int i, j, k, n;
 
   ThreadParams params = *((ThreadParams *)parameters);
 
   int id = params.id;
-  TipoNo *Dicionario = params.Dicionario;
   TipoChave* vetor = params.vetor;
 
   /* Insere cada chave na arvore e testa sua integridade apos cada insercao */
@@ -44,21 +43,23 @@ void *tree_thread(void *parameters){//}, void* vetor){
   }
 
   barreira(&bar);
-  if(id == 1){
-    for (i = 0; i < MAX; i++){
-      x.Chave = vetor[MAX - i];
-      Retira(x, &Dicionario);
-    }
+  for (i = (id-1)*LEN; i < id*LEN; i++){
+    x.Chave = vetor[i % LEN + (id-1)*LEN];
+    Retira(x, &Dicionario);
   }
-
+  // if(id == 1){
+  //   for (i = 0; i < MAX; i++){
+  //     x.Chave = vetor[(MAX- 1) - i];
+  //     Retira(x, &Dicionario);
+  //   }
+  // }
   return NULL;
 }
-
 
 int main(int argc, char *argv[]){
   pthread_t threads[NUM_THREADS];
   initBarreira(&bar, NUM_THREADS);
-  struct timeval t; TipoNo *Dicionario;
+  struct timeval t;
   TipoChave vetor[MAX];
   int i;
 
@@ -68,17 +69,6 @@ int main(int argc, char *argv[]){
   gettimeofday(&t,NULL);
   srand((unsigned int)t.tv_usec);
   Permut(vetor,MAX-1);
-
-  TipoRegistro x;
-  x.Chave = 12;
-  Dicionario = (TipoApontador)malloc(sizeof(TipoNo));
-  Dicionario->Reg = x;
-  Dicionario->Esq = NULL;
-  Dicionario->Dir = NULL;
-  Dicionario->mutex = (pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER;
-  Dicionario->cond = (pthread_cond_t)PTHREAD_COND_INITIALIZER;
-  Dicionario->is_locked = 0;
-  Dicionario->reader_counter = 0;
 
   ThreadParams params[NUM_THREADS];
   for (i = 1; i < NUM_THREADS+1; i++)
@@ -94,5 +84,4 @@ int main(int argc, char *argv[]){
   }
   Central(Dicionario);
   Testa(Dicionario);
-
 }
