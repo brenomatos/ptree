@@ -44,9 +44,11 @@ void *tree_thread(void *parameters){//}, void* vetor){
   }
 
   barreira(&bar);
-  for (i = (id-1)*LEN; i < id*LEN; i++){
-    x.Chave = vetor[i % LEN + (id-1)*LEN];
-    Retira(x, &Dicionario);
+  if(id == 1){
+    for (i = 0; i < MAX; i++){
+      x.Chave = vetor[MAX - i];
+      Retira(x, &Dicionario);
+    }
   }
 
   return NULL;
@@ -91,5 +93,6 @@ int main(int argc, char *argv[]){
       pthread_join(threads[i], NULL);
   }
   Central(Dicionario);
+  Testa(Dicionario);
 
 }

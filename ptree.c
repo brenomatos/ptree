@@ -98,14 +98,21 @@ void Inicializa(TipoApontador *Dicionario){
 }
 
 void Antecessor(TipoApontador q, TipoApontador *r){
+  pthread_mutex_lock(&((*r)->mutex));
+  if((*r)->is_locked || (*r)->reader_counter > 0){
+    pthread_cond_wait(&((*r)->cond), &((*r)->mutex));
+  }
+  (*r)->is_locked = 1;
+  pthread_mutex_unlock(&((*r)->mutex));
+
   if ((*r)->Dir != NULL){
     Antecessor(q, &(*r)->Dir);
+    pthread_mutex_lock(&((*r)->mutex));
+    (*r)->is_locked = 0;
+    pthread_cond_broadcast(&((*r)->cond));
+    pthread_mutex_unlock(&((*r)->mutex));
     return;
   }
-  //??????????????????????????
-  // q->is_locked = (*r)->is_locked;
-  // q->reader_counter = (*r)->reader_counter;
-  //??????????????????????????
   q->Reg = (*r)->Reg;
   q = *r;
   *r = (*r)->Esq;
