@@ -12,9 +12,7 @@ TipoNo *Dicionario;
 void *tree_thread(void *parameters){
   TipoRegistro x;
   int i, j, k, n;
-
   ThreadParams params = *((ThreadParams *)parameters);
-
   int id = params.id;
   TipoChave* vetor = params.vetor;
 
@@ -47,12 +45,6 @@ void *tree_thread(void *parameters){
     x.Chave = vetor[i % LEN + (id-1)*LEN];
     Retira(x, &Dicionario);
   }
-  // if(id == 1){
-  //   for (i = 0; i < MAX; i++){
-  //     x.Chave = vetor[(MAX- 1) - i];
-  //     Retira(x, &Dicionario);
-  //   }
-  // }
   return NULL;
 }
 
@@ -74,7 +66,6 @@ int main(int argc, char *argv[]){
   for (i = 1; i < NUM_THREADS+1; i++)
   {
       params[i - 1].id = i;
-      params[i - 1].Dicionario = Dicionario;
       params[i - 1].vetor = vetor;
       pthread_create(&threads[i - 1], NULL, tree_thread, (void *)&(params[i - 1]));
   }

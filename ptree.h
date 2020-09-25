@@ -30,7 +30,6 @@ typedef TipoApontador TipoDicionario;
 
 typedef struct ThreadParams {
   int id;
-  TipoNo * Dicionario;
   TipoChave* vetor;
 } ThreadParams;
 
