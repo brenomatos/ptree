@@ -3,7 +3,7 @@
 #include <limits.h>
 #include <sys/time.h>
 #include <pthread.h>
-#define MAX  2000
+#define MAX  1000
 
 
 typedef long TipoChave;

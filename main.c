@@ -2,7 +2,7 @@
 #include "barreira.h"
 #include <time.h>
 
-#define NUM_THREADS 2
+#define NUM_THREADS 1
 
 int LEN = MAX/NUM_THREADS;
 
@@ -28,26 +28,38 @@ void *tree_thread(void *parameters){
   //Insere cada chave na arvore
   //Cada thread irá inserir um subconjunto dos valores
   //essa divisão de conjunto é feita no limite desse for
+
+  start = clock();
   for(i = (id-1)*LEN; i < id*LEN; i++){
     x.Chave = vetor[i];
     /*
       no início, a árvore é vazia, então, foi usado um mutex global
       responsável por esperar até que o primeiro nó seja
     */
-    if(Dicionario == NULL) pthread_mutex_lock(&global_mutex);
+    if(Dicionario == NULL){
+      /*
+        no início, a árvore é vazia, então, foi usado um mutex global
+        responsável por esperar até que o primeiro nó seja inserido
+      */
+      pthread_mutex_lock(&global_mutex);
+      Insere(x, &Dicionario);
+      pthread_mutex_unlock(&global_mutex);
+    }else{
+      /* depois dessa inserção inicial os nós são inseridos
+         paralelamente */
+      Insere(x, &Dicionario);
+    }
     pthread_mutex_lock(&time_mutex);
     contador_fase1++;
-    start = clock();
-    Insere(x, &Dicionario);
-    end = clock();
-    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-    timer_fase1 += cpu_time_used;
-    pthread_mutex_unlock(&global_mutex);
     pthread_mutex_unlock(&time_mutex);
-
   }
 
+  end = clock();
+  cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+  timer_fase1 = cpu_time_used;
   barreira(&bar);
+  start = clock();
+
   //Retira uma chave aleatoriamente e realiza varias pesquisas
   for(i = 0; i < LEN; i++){
     //Cada thread irá considerar um subconjunto dos valores
@@ -55,56 +67,50 @@ void *tree_thread(void *parameters){
     k = (int) ((double)MAX*rand()/(RAND_MAX+1.0));
     n = vetor[k % LEN + (id-1)*LEN];
     x.Chave = n;
-    pthread_mutex_lock(&time_mutex);
-    start = clock();
     Retira(x, &Dicionario);
-    end = clock();
-    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-    timer_fase2 += cpu_time_used;
+    pthread_mutex_lock(&time_mutex);
     contador_fase2++;
     pthread_mutex_unlock(&time_mutex);
     for (j = 0; j < LEN; j++){
       x.Chave = vetor[((int) ((double)MAX*rand()/(RAND_MAX+1.0)))% LEN + (id-1)*LEN];
       if (x.Chave != n)
       {
-        pthread_mutex_lock(&time_mutex);
-        start = clock();
         Pesquisa(&x, &Dicionario);
-        end = clock();
-        cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-        timer_fase2 += cpu_time_used;
+        pthread_mutex_lock(&time_mutex);
         contador_fase2++;
         pthread_mutex_unlock(&time_mutex);
 
       }
     }
     x.Chave = n;
-    pthread_mutex_lock(&time_mutex);
-    start = clock();
     Insere(x, &Dicionario);
-    end = clock();
-    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-    timer_fase2 += cpu_time_used;
+    pthread_mutex_lock(&time_mutex);
     contador_fase2++;
     pthread_mutex_unlock(&time_mutex);
   }
 
+  end = clock();
+  cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+  timer_fase2 = cpu_time_used;
+
   barreira(&bar);
+  start = clock();
 
   //Insere remove elementos da árvore
   //Cada thread irá remover um subconjunto dos valores
   //essa divisão de conjunto é feita no limite desse for
   for (i = (id-1)*LEN; i < id*LEN; i++){
     x.Chave = vetor[i % LEN + (id-1)*LEN];
-    pthread_mutex_lock(&time_mutex);
-    start = clock();
     Retira(x, &Dicionario);
-    end = clock();
-    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-    timer_fase3 += cpu_time_used;
+    pthread_mutex_lock(&time_mutex);
     contador_fase3++;
     pthread_mutex_unlock(&time_mutex);
   }
+
+  end = clock();
+  cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+  timer_fase3 = cpu_time_used;
+
   return NULL;
 }
 
@@ -140,7 +146,7 @@ int main(int argc, char *argv[]){
   Central(Dicionario);
   //função que testa a integridade da árvore
   Testa(Dicionario);
-  printf("Operações fase 1: %d operacoes, %lf segundos\n", contador_fase1, timer_fase1);
-  printf("Operações fase 2: %d operacoes, %lf segundos\n", contador_fase2, timer_fase2);
-  printf("Operações fase 3: %d operacoes, %lf segundos\n", contador_fase3, timer_fase3);
+  printf("Operações fase 1: %d operacoes, %lf segundos (%lf)\n", contador_fase1, timer_fase1, contador_fase1/timer_fase1);
+  printf("Operações fase 2: %d operacoes, %lf segundos (%lf)\n", contador_fase2, timer_fase2, contador_fase2/timer_fase2);
+  printf("Operações fase 3: %d operacoes, %lf segundos (%lf)\n", contador_fase3, timer_fase3, contador_fase3/timer_fase3);
 }
