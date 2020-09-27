@@ -8,6 +8,8 @@ int LEN = MAX/NUM_THREADS;
 
 TBarreira bar;
 TipoNo *Dicionario;
+pthread_mutex_t global_mutex = (pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t time_mutex = (pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER;
 
 void *tree_thread(void *parameters){
   //esta função será executada por todas as threads e inclui as 3 fases
@@ -22,7 +24,13 @@ void *tree_thread(void *parameters){
   //essa divisão de conjunto é feita no limite desse for
   for(i = (id-1)*LEN; i < id*LEN; i++){
     x.Chave = vetor[i];
+    /*
+      no início, a árvore é vazia, então, foi usado um mutex global
+      responsável por esperar até que o primeiro nó seja 
+    */
+    if(Dicionario == NULL) pthread_mutex_lock(&global_mutex);
     Insere(x, &Dicionario);
+    pthread_mutex_unlock(&global_mutex);
   }
 
   barreira(&bar);

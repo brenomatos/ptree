@@ -28,7 +28,7 @@ void Pesquisa(TipoRegistro *x, TipoApontador *p){
     pthread_mutex_lock(&((*p)->mutex));
     (*p)->reader_counter--;
     if((*p)->reader_counter == 0){
-      pthread_cond_broadcast(&((*p)->cond));
+      pthread_cond_signal(&((*p)->cond));
     }
     pthread_mutex_unlock(&((*p)->mutex));
     return;
@@ -48,7 +48,7 @@ void Pesquisa(TipoRegistro *x, TipoApontador *p){
   pthread_mutex_lock(&((*p)->mutex));
   (*p)->reader_counter--;
   if((*p)->reader_counter == 0){
-    pthread_cond_broadcast(&((*p)->cond));
+    pthread_cond_signal(&((*p)->cond));
   }
   pthread_mutex_unlock(&((*p)->mutex));
 }
@@ -66,6 +66,7 @@ void Insere(TipoRegistro x, TipoApontador *p){
     (*p)->reader_counter = 0;
     return;
   }
+
   if (x.Chave < (*p)->Reg.Chave){
     if((*p)->Esq == NULL){
       /*
@@ -93,7 +94,7 @@ void Insere(TipoRegistro x, TipoApontador *p){
       */
       pthread_mutex_lock(&((*p)->mutex));
       (*p)->is_locked = 0;
-      pthread_cond_broadcast(&((*p)->cond));
+      pthread_cond_signal(&((*p)->cond));
       pthread_mutex_unlock(&((*p)->mutex));
 
     }else{
@@ -128,7 +129,7 @@ void Insere(TipoRegistro x, TipoApontador *p){
       */
       pthread_mutex_lock(&((*p)->mutex));
       (*p)->is_locked = 0;
-      pthread_cond_broadcast(&((*p)->cond));
+      pthread_cond_signal(&((*p)->cond));
       pthread_mutex_unlock(&((*p)->mutex));
 
     }else{
@@ -164,7 +165,7 @@ void Antecessor(TipoApontador q, TipoApontador *r){
     */
     pthread_mutex_lock(&((*r)->mutex));
     (*r)->is_locked = 0;
-    pthread_cond_broadcast(&((*r)->cond));
+    pthread_cond_signal(&((*r)->cond));
     pthread_mutex_unlock(&((*r)->mutex));
     return;
   }
@@ -205,7 +206,7 @@ void Retira(TipoRegistro x, TipoApontador *p){
     */
     pthread_mutex_lock(&((*p)->mutex));
     (*p)->is_locked = 0;
-    pthread_cond_broadcast(&((*p)->cond));
+    pthread_cond_signal(&((*p)->cond));
     pthread_mutex_unlock(&((*p)->mutex));
     return;
   }
@@ -219,7 +220,7 @@ void Retira(TipoRegistro x, TipoApontador *p){
     */
     pthread_mutex_lock(&((*p)->mutex));
     (*p)->is_locked = 0;
-    pthread_cond_broadcast(&((*p)->cond));
+    pthread_cond_signal(&((*p)->cond));
     pthread_mutex_unlock(&((*p)->mutex));
     return;
   }
@@ -240,7 +241,7 @@ void Retira(TipoRegistro x, TipoApontador *p){
     */
     pthread_mutex_lock(&((*p)->mutex));
     (*p)->is_locked = 0;
-    pthread_cond_broadcast(&((*p)->cond));
+    pthread_cond_signal(&((*p)->cond));
     pthread_mutex_unlock(&((*p)->mutex));
     return;
   }
