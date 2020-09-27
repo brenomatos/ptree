@@ -6,10 +6,14 @@
 
 int LEN = MAX/NUM_THREADS;
 
+
 TBarreira bar;
 TipoNo *Dicionario;
 pthread_mutex_t global_mutex = (pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t time_mutex = (pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER;
+
+int contador_fase1 = 0, contador_fase2 = 0, contador_fase3 = 0;
+double timer_fase1 =0.0, timer_fase2 = 0.0, timer_fase3 = 0.0;
 
 void *tree_thread(void *parameters){
   //esta função será executada por todas as threads e inclui as 3 fases
@@ -18,6 +22,8 @@ void *tree_thread(void *parameters){
   ThreadParams params = *((ThreadParams *)parameters);
   int id = params.id;
   TipoChave* vetor = params.vetor;
+  clock_t start, end; // variaveis usadas para medir o tempo de cpu utilizado por cada fase
+  double cpu_time_used;
 
   //Insere cada chave na arvore
   //Cada thread irá inserir um subconjunto dos valores
@@ -26,11 +32,19 @@ void *tree_thread(void *parameters){
     x.Chave = vetor[i];
     /*
       no início, a árvore é vazia, então, foi usado um mutex global
-      responsável por esperar até que o primeiro nó seja 
+      responsável por esperar até que o primeiro nó seja
     */
     if(Dicionario == NULL) pthread_mutex_lock(&global_mutex);
+    pthread_mutex_lock(&time_mutex);
+    contador_fase1++;
+    start = clock();
     Insere(x, &Dicionario);
+    end = clock();
+    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+    timer_fase1 += cpu_time_used;
     pthread_mutex_unlock(&global_mutex);
+    pthread_mutex_unlock(&time_mutex);
+
   }
 
   barreira(&bar);
@@ -41,16 +55,38 @@ void *tree_thread(void *parameters){
     k = (int) ((double)MAX*rand()/(RAND_MAX+1.0));
     n = vetor[k % LEN + (id-1)*LEN];
     x.Chave = n;
+    pthread_mutex_lock(&time_mutex);
+    start = clock();
     Retira(x, &Dicionario);
+    end = clock();
+    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+    timer_fase2 += cpu_time_used;
+    contador_fase2++;
+    pthread_mutex_unlock(&time_mutex);
     for (j = 0; j < LEN; j++){
       x.Chave = vetor[((int) ((double)MAX*rand()/(RAND_MAX+1.0)))% LEN + (id-1)*LEN];
       if (x.Chave != n)
       {
+        pthread_mutex_lock(&time_mutex);
+        start = clock();
         Pesquisa(&x, &Dicionario);
+        end = clock();
+        cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+        timer_fase2 += cpu_time_used;
+        contador_fase2++;
+        pthread_mutex_unlock(&time_mutex);
+
       }
     }
     x.Chave = n;
+    pthread_mutex_lock(&time_mutex);
+    start = clock();
     Insere(x, &Dicionario);
+    end = clock();
+    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+    timer_fase2 += cpu_time_used;
+    contador_fase2++;
+    pthread_mutex_unlock(&time_mutex);
   }
 
   barreira(&bar);
@@ -60,7 +96,14 @@ void *tree_thread(void *parameters){
   //essa divisão de conjunto é feita no limite desse for
   for (i = (id-1)*LEN; i < id*LEN; i++){
     x.Chave = vetor[i % LEN + (id-1)*LEN];
+    pthread_mutex_lock(&time_mutex);
+    start = clock();
     Retira(x, &Dicionario);
+    end = clock();
+    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+    timer_fase3 += cpu_time_used;
+    contador_fase3++;
+    pthread_mutex_unlock(&time_mutex);
   }
   return NULL;
 }
@@ -97,4 +140,7 @@ int main(int argc, char *argv[]){
   Central(Dicionario);
   //função que testa a integridade da árvore
   Testa(Dicionario);
+  printf("Operações fase 1: %d operacoes, %lf segundos\n", contador_fase1, timer_fase1);
+  printf("Operações fase 2: %d operacoes, %lf segundos\n", contador_fase2, timer_fase2);
+  printf("Operações fase 3: %d operacoes, %lf segundos\n", contador_fase3, timer_fase3);
 }
