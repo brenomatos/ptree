@@ -2,7 +2,7 @@
 #include "barreira.h"
 #include <time.h>
 
-#define NUM_THREADS 1
+#define NUM_THREADS 2
 
 int LEN = MAX/NUM_THREADS;
 
